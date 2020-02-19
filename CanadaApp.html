@@ -1,11 +1,12 @@
 <!-- GEOM99WK7 -->
 <!-- For GEOM99 Week 7 Practical Lab -->
 
+
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>ArcGIS JavaScript Tutorials: Get drive times</title>
+  <title>ArcGIS JavaScript Tutorials: Display a Web Map</title>
   <style>
     html, body, #viewDiv {
       padding: 0;
@@ -14,91 +15,24 @@
       width: 100%;
     }
   </style>
-  
   <link rel="stylesheet" href="https://js.arcgis.com/4.13/esri/css/main.css">
   <script src="https://js.arcgis.com/4.13/"></script>
-  
-  <script>  
+  <script>
     require([
-      "esri/Map",
-      "esri/views/MapView",
-      "esri/tasks/ServiceAreaTask",
-       "esri/tasks/support/ServiceAreaParameters",
-      "esri/tasks/support/FeatureSet",
-      "esri/Graphic"
-    ], function(Map, MapView, ServiceAreaTask, ServiceAreaParams, FeatureSet, Graphic) {
+      "esri/WebMap",
+      "esri/views/MapView"
+    ], function(WebMap, MapView) {
 
-      var map = new Map({
-        //basemap: "topo-vector"
-        basemap: "streets-navigation-vector"
+      var webmap = new WebMap({
+        portalItem: {
+          id: "b5b5a87026b14662baa7b6e5fc29b747"
+        }
       });
-      
+
       var view = new MapView({
         container: "viewDiv",
-        map: map,
-        center: [-118.24532,34.05398],
-        zoom: 11
+        map: webmap
       });
-      
-      var serviceAreaTask = new ServiceAreaTask({
-        url: "https://route.arcgis.com/arcgis/rest/services/World/ServiceAreas/NAServer/ServiceArea_World/solveServiceArea"
-      });
-      
-      view.on("click", function(event){
-        var locationGraphic = createGraphic(event.mapPoint);
-        var driveTimeCutoffs = [15]; // Minutes (default)
-        var serviceAreaParams = createServiceAreaParams(locationGraphic, driveTimeCutoffs, view.spatialReference);
-        executeServiceAreaTask(serviceAreaParams);
-      });
-      
-      // Create the location graphic
-      function createGraphic(point) {
-        // Remove any existing graphics
-        view.graphics.removeAll();
-        // Create a and add the point
-        var graphic = new Graphic({
-          geometry: point,
-          symbol: {
-            type: "simple-marker",
-            color: "white",
-            size: 8
-          }
-        });
-        view.graphics.add(graphic);
-        return graphic;
-      }
-            
-      function createServiceAreaParams(locationGraphic, driveTimeCutoffs, outSpatialReference) {
-        // Create one or more locations (facilities) to solve for
-        var featureSet = new FeatureSet({
-          features: [locationGraphic]        
-        });
-        // Set all of the input parameters for the service
-        var taskParameters = new ServiceAreaParams({
-          facilities: featureSet,
-          defaultBreaks: driveTimeCutoffs, 
-          outSpatialReference: outSpatialReference
-        });
-        return taskParameters;
-      }    
-      
-      function executeServiceAreaTask(serviceAreaParams) {
-        return serviceAreaTask.solve(serviceAreaParams)
-          .then(function(result){
-            if (result.serviceAreaPolygons.length) {
-              // Draw each service area polygon
-              result.serviceAreaPolygons.forEach(function(graphic){
-                graphic.symbol = {
-                  type: "simple-fill",
-                  color: "rgba(255,50,50,.25)"
-                }
-                view.graphics.add(graphic,0);
-              });
-            }
-          }, function(error){
-            console.log(error);  
-          });
-      }
       
     });
   </script>
